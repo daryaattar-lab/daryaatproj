@@ -4,11 +4,41 @@
   </head>
   <body>
     <a-scene>
-      <a-sphere radius="2" material="color: #fec700; emissive: #fec700; emissiveIntensity: 1.84" position="0 -5 -10" scale="0.5 0.5 0.5" animation="property: position; to;0 10 -10 ></a-sphere>
-  <a-cone radiustop:="" 0.1="" position="2.179 1.72013 -12.48096" scale="2.93936 3.49116 2.09678" material="color: #7c2a00"></a-cone>
-  <a-cone radiustop:="" 0.1="" position="-1.87496 1.72013 -11.94966" scale="4.33811 5.53844 3.92042" material="color: #ad3e00"></a-cone>
-   <a-plane height="10" width="10" material="side: double" color="green" rotation="90 0 0" position="0 0 -6.83037" scale="3 2 3"></a-plane>
-      <a-sky color="#acd5df"></a-sky>
+      <a-sphere
+        radius="1"
+        material="color: #fec700; emissive: #fec700; emissiveIntensity: 1.84"
+        position="0 1 -8"
+        scale="1 1 1"
+        ><a-entity
+          id="earth-orbit-pivot"
+          animation="property: rotation; to: 0 360 0; loop: true; dur: 20000; easing: linear"
+        >
+          <a-sphere
+            id="earth"
+            radius="0.3"
+            color="lightblue"
+            position="6 0 0"
+            animation="property: rotation; to: 0 360 0; loop: true; dur: 1000; easing: linear"
+            ><a-sphere id="moon" radius="0.1" position="0.6 0.6 0.6"></a-sphere>
+          </a-sphere>
+          <a-sphere
+            position="8 0 5"
+            radius="0.2"
+            ;
+            color="pink"
+            animation="property: rotation; to: 360 0 0; loop: true; dur: 10000; easing: linear"
+            ><a-torus
+              id="saturn"
+              material="color: #ffa57d; emissive: #f4a4c0; metalness: 1"
+              geometry="radiusTubular: 0.04"
+              rotation="73.90181528935898 -79.55920055848073 -95.80541883941521"
+              scale="0.5 0.5 0.33"
+            ></a-torus>
+          </a-sphere>
+        </a-entity>
+      </a-sphere>
+      <a-sky color="#1f2140"></a-sky>
     </a-scene>
   </body>
 </html>
+https://fonts.gstatic.com/s/i/googlematerialicons/done/v15/gm_grey-24dp/1x/gm_done_gm_grey_24dp.png
