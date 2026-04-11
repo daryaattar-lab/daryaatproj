@@ -12,16 +12,30 @@
         ><a-entity
           id="earth-orbit-pivot"
           animation="property: rotation; to: 0 360 0; loop: true; dur: 20000; easing: linear"
-        >
-          <a-sphere
+          ><a-sphere
             id="earth"
             radius="0.3"
             color="lightblue"
             position="6 0 0"
             animation="property: rotation; to: 0 360 0; loop: true; dur: 1000; easing: linear"
-            ><a-sphere id="moon" radius="0.1" position="0.6 0.6 0.6"></a-sphere>
-          </a-sphere>
-          <a-sphere
+            ><a-sphere id="moon" radius="0.1" position="0.6 0 0.6"></a-sphere>
+        </a-entity>
+         ><a-entity
+          id="mercury-orbit-pivot"
+          animation="property: rotation; to: 0 360 0; loop: true; dur: 10000; easing: linear">
+          ><a-sphere 
+          id="Mercury" radius="0.1" position="2 0 0" color="gray"></a/-sphere>
+        </a-entity>
+        ><a-entity
+          id="Venus-orbit-pivot"
+          animation="property: rotation; to: 0 360 0; loop: true; dur: 40000; easing: linear">
+        ><a-sphere 
+          id="Venus" radius="0.15" position="3 0 2" color="orange"></a/-sphere>
+        </a-entity>
+        ><a-entity
+          id="Saturn-orbit-pivot"
+          animation="property: rotation; to: 0 360 0; loop: true; dur: 40000; easing: linear">
+          <a-sphere Id="Saturn"
             position="8 0 5"
             radius="0.2"
             ;
@@ -38,7 +52,10 @@
         </a-entity>
       </a-sphere>
       <a-sky color="#1f2140"></a-sky>
+      <a-entity light="color: #BBB; type: point" data-aframe-default-light="" aframe-injected="" position="0 1.49645 0"></a-entity>
+      <a-entity light="intensity: 3.794; type: spot; castShadow: true" position="-0.15907 1 -6.43851" data-aframe-default-light="" aframe-injected=""></a-entity>
     </a-scene>
-  </body>
+
+  </body>  
 </html>
 https://fonts.gstatic.com/s/i/googlematerialicons/done/v15/gm_grey-24dp/1x/gm_done_gm_grey_24dp.png
