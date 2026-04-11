@@ -1,0 +1,57 @@
+<html>
+  <head>
+    <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
+    <script src="https://unpkg.com/aframe-environment-component@1.5.x/dist/aframe-environment-component.min.js"></script>
+  </head>
+  <body>
+<a-scene keyboard-shortcuts="" screenshot="" xr-mode-ui="" device-orientation-permission-ui="" fog="color: #203747; density: 10; far: 83.99999999999999; near: 0.92">
+      <a-assets>
+        <video id="lake" src="./lake.mp4" autoplay loop muted playsinline></video>
+        <img id="kraken" src="kraken.png">
+      </a-assets>
+      <a-entity environment="preset: forest; seed: 50; skyType: gradient; skyColor: #000000; horizonColor: #020d57; shadowSize: 9.26; lightPosition: -0.42 2.01 0.04; ground: canyon; groundTexture: walkernoise; groundColor: #669c35; groundColor2: #96d35f; dressing: trees; dressingAmount: 1000; dressingColor: #4f7a28; gridColor: #000000; fog: 0.8" position="0 0 0.0429" >
+        <a-entity class="environment" position="0 50 0" light="color: #a7bd94; groundColor: #669c35; intensity: 1.884; type: hemisphere"></a-entity>
+        <a-entity class="environment" position="-0.42 2.01 0.04" light="intensity: 1.884; shadowCameraTop: 10; shadowCameraRight: 10; shadowCameraBottom: -10; shadowCameraLeft: -10"></a-entity>
+        <a-entity rotation="-90 0 0" class="environmentGround environment" scale="1 1 4.18" shadow="cast: false; receive: false"></a-entity>
+        <a-entity class="environmentDressing environment"></a-entity>
+        <a-sky radius="200" theta-length="110" class="environment" material="shader: gradientshader; topColor: [object Object]; bottomColor: [object Object]"></a-sky>
+        <a-video src="#lake" width="16" height="9" position="0 0.01396 -7.50488" scale="0.18 0.18 1.13552" geometry="height: 45; width: 80" rotation="90 0 0"></a-video>
+        <a-sphere material="color: #38571a; roughness: 1" position="8.11914 -0.01474 -7.09676" scale="1.52444 1 1"></a-sphere>
+        <a-sphere material="color: #38571a; roughness: 1" position="-4.00463 -0.01474 -11.84006" scale="1.52444 1 1" rotation="0 -39.09634810854685 0"></a-sphere>
+        <a-sphere material="color: #38571a; roughness: 1" position="3.98887 -0.01474 -10.65332" scale="1.52444 1 1.8547" rotation="0 46.557977474535576 0"></a-sphere>
+        <a-sphere material="color: #38571a; roughness: 1" position="1.78187 -0.42734 -2.71811" scale="0.5881 1.83369 1" rotation="0 11.211065177324821 0"></a-sphere>
+        <a-sphere material="color: #38571a; roughness: 1" position="3.60557 -0.01474 -3.47807" scale="2.56127 1 1.37062" rotation="0 45.90136784131564 0"></a-sphere>
+        <a-sphere material="color: #38571a; roughness: 1" position="6.24512 0.69845 -10.82907" scale="1.52444 1 1.67607" rotation="0 -48.66989990738778 0"></a-sphere>
+        <a-sphere material="color: #38571a; roughness: 1" position="-5.57548 -0.01474 -4.49028" scale="2.29813 0.96529 3.40229" rotation="0 33.135295208005765 0"></a-sphere>
+        <a-sphere material="color: #38571a; roughness: 1" position="1.52537 -0.01474 -10.90864" scale="1.52444 1 1"></a-sphere>
+        <a-sphere material="color: #38571a; roughness: 1" position="-2.31707 -0.01474 -3.25109" scale="0.78476 0.47542 1"></a-sphere>
+        <a-dodecahedron material="color: #263e0f; roughness: 1" position="6.22764 0.07638 -3.52955" scale="1.84584 1 0.79013" rotation="-51.457339580699234 -144.2352494306432 -3.8605896235914865"></a-dodecahedron>
+        <a-dodecahedron material="color: #263e0f; roughness: 1" position="-1.40257 0.278 -12.24625" scale="2.06505 1 1.89411" rotation="-64.20507756456492 -47.78468011391065 -140.38841079413484"></a-dodecahedron>
+        <a-dodecahedron material="color: #263e0f; roughness: 1" position="-5.92596 0.2782 -10.8508" scale="1.84584 0.94149 1.4298" rotation="-5.5468044146615 149.8181501863979 -15.147285229873573"></a-dodecahedron>
+        <a-dodecahedron material="color: #263e0f; roughness: 1" position="-7.5177 -0.09587 -8.66021" scale="1.87404 1.51409 1.45164" rotation="34.818072252304994 84.05233558789664 10.459917507908308"></a-dodecahedron>
+        <a-dodecahedron material="color: #263e0f; roughness: 1" position="7.18447 -0.09587 -9.06725" scale="1.84584 1 1.4298" rotation="-7.14077300071545 15.178224950810637 14.47692460957051"></a-dodecahedron>
+        <a-dodecahedron material="color: #263e0f; roughness: 1" position="7.06808 -0.14422 -5.40923" scale="1.19409 0.58084 1.21741" rotation="14.715275052344934 -75.95529602710783 6.626256900687971"></a-dodecahedron>
+        <a-dodecahedron material="color: #263e0f; roughness: 1" position="-0.14832 -0.64621 -3.02402" scale="1.87758 2.36165 0.94252" rotation="-7.14077300071545 15.178224950810637 14.47692460957051">
+        </a-dodecahedron>
+        <a-sphere radius="1" material="color: #fec700; emissive: #fec700; emissiveIntensity: 1.84" position="0 17.9 -34" rotation="-22 0 0" scale="2 2 2"><a-entity id="earth-orbit-pivot" animation="dur: 20000; easing: linear; loop: true; property: rotation; to: -22 360 0"><a-sphere id="earth" radius="0.3" color="lightblue" position="6 0 0" animation="easing: linear; loop: true; property: rotation; to: 0 360 0"><a-sphere id="moon" radius="0.1" position="0.6 0 0.6"></a-sphere>
+        </a-sphere></a-entity>
+         <a-entity id="mercury-orbit-pivot" animation="dur: 10000; easing: linear; loop: true; property: rotation; to: 0 360 0">
+          <a-sphere id="Mercury" radius="0.1" position="2 0 0" color="gray">
+        </a-sphere></a-entity>
+        <a-entity id="Venus-orbit-pivot" animation="dur: 40000; easing: linear; loop: true; property: rotation; to: 0 360 0">
+        <a-sphere id="Venus" radius="0.15" position="3 0 2" color="orange">
+        </a-sphere></a-entity>
+       <a-entity id="Saturn-orbit-pivot" animation="dur: 40000; easing: linear; loop: true; property: rotation; to: 0 360 0">
+          <a-sphere id="Saturn" position="8 0 5" radius="0.2" ;="" color="pink" animation="dur: 10000; easing: linear; loop: true; property: rotation; to: 360 0 0"><a-torus id="saturn" material="color: #ffa57d; emissive: #f4a4c0; metalness: 1" geometry="radiusTubular: 0.04" rotation="73.90181528935898 -79.55920055848073 -95.80541883941521" scale="0.5 0.5 0.33"></a-torus>
+          </a-sphere>
+        </a-entity>
+      </a-sphere><a-plane src="#kraken" position="0 -2.5 -6.7" material="transparent: true" scale="7 7 7" rotation="0 0 0"  animation="property: position; to: 0 1 -6.7; dir: alternate; dur: 3000"></a-plane>        
+      <a-entity class="environment" position="0 16.60722 -8.30665" light="color: #a7bd94; groundColor: #669c35; intensity: 1.884; type: hemisphere"></a-entity>
+        <a-entity class="environment" position="-0.42 13.93613 0.04" light="intensity: 1.884; shadowCameraTop: 10; shadowCameraRight: 10; shadowCameraBottom: -10; shadowCameraLeft: -10"></a-entity>
+        <a-entity rotation="-90 0 0" class="environmentGround environment" scale="1 1 4.18" shadow="cast: false; receive: false"></a-entity>
+        <a-entity class="environmentDressing environment"></a-entity>
+        <a-sky radius="200" theta-length="110" class="environment" material="shader: gradientshader; topColor: [object Object]; bottomColor: [object Object]"></a-sky>
+      <a-entity class="environment" position="0 50 0" light="color: #808080; groundColor: #669c35; intensity: 1.884; type: hemisphere"></a-entity><a-entity class="environment" position="-0.42 2.01 0.04" light="intensity: 1.884; shadowCameraTop: 9.26; shadowCameraRight: 9.26; shadowCameraBottom: -9.26; shadowCameraLeft: -9.26"></a-entity><a-entity rotation="-90 0 0" class="environmentGround environment" scale="1 1 4.18" shadow="cast: false; receive: false"></a-entity><a-entity class="environmentDressing environment"></a-entity><a-sky radius="200" theta-length="110" class="environment" material="shader: gradientshader; topColor: [object Object]; bottomColor: [object Object]"></a-sky></a-entity>
+    </a-scene>
+  </body>
+</html>
