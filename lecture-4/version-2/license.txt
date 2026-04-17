@@ -1,0 +1,8 @@
+Model Information:
+* title:	Woman head - Sasha (tiefling)
+* source:	https://sketchfab.com/3d-models/woman-head-sasha-tiefling-bbb5aa13faeb42e8be0a7fe71dcb91f2
+* author:	kumihikari (https://sketchfab.com/kumihikari)
+
+Model License:
+* license type:	SKETCHFAB Standard (https://sketchfab.com/licenses)
+* requirements:	Under basic restrictions, use worldwide, on all types of media, commercially or not, and in all types of derivative works

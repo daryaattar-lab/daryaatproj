@@ -1,0 +1,8 @@
+Model Information:
+* title:	Nila Ikan
+* source:	https://sketchfab.com/3d-models/nila-ikan-8f37da95927a496e87b6cbd43a2ed85b
+* author:	Rio2 (https://sketchfab.com/Rio2)
+
+Model License:
+* license type:	SKETCHFAB Standard (https://sketchfab.com/licenses)
+* requirements:	Under basic restrictions, use worldwide, on all types of media, commercially or not, and in all types of derivative works

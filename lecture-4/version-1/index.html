@@ -1,0 +1,14 @@
+<html>
+  <head>
+    <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.7.0/dist/aframe-extras.min.js"></script>
+  </head>
+  <body><a-scene keyboard-shortcuts="" screenshot="" xr-mode-ui="" device-orientation-permission-ui="" background="color: #000659"> 
+    <a-assets>
+    <a-asset-item id="fishglb" src="fish glb.glb"></a-asset-item><a-asset-item id="rock" src="Rock.glb"></a-asset-item><a-asset-item id="coral" src="underwater_enviro_coral.glb"></a-asset-item></a-assets>
+    <a-plane material="color: #5f8787" rotation="-90 0 0" position="0 -3 0" scale="30 30 30"></a-plane>
+    <a-entity id="fish-move" position="-8 0 0" animation="dur: 10000; easing: linear; loop: true; property: position; to: 20 0 0"><a-entity id="fish-updown" position="0 4.203333333333333 -14" animation="dir: alternate; dur: 3000; easing: linear; loop: true; property: position; to: 0 6 -14"><a-gltf-model src="#fishglb" rotation="0 0 29.438894640925252" scale="0.5 0.5 0.5" animation__move="dir: alternate easing: easeOutCubic; dur: 6000; loop: true; property: rotation; to: 0 0 -30" animation-mixer="clip: metarig|Berenang Santai" gltf-model="fish glb.glb"></a-gltf-model> </a-entity></a-entity>
+    <a-gltf-model src="#rock" position="-9 1 -9" scale="10 10 10" gltf-model="Rock.glb"></a-gltf-model><a-gltf-model src="#rock" position="11.69251 -4.66009 -9" scale="15 10 10" gltf-model="Rock.glb" rotation="-26.26725011777259 58.45200834365633 26.09364390584795"></a-gltf-model>
+    <a-gltf-model src="#coral" position="5.52154 1.56002 -12.42823" scale="3 3 3" gltf-model="underwater_enviro_coral.glb" rotation="-11.44491034526821 159 -40" animation="dir: alternate; dur: 2000; loop: true; property: rotation; to: 0 159 -40"></a-gltf-model>
+  </a-scene>
+</body></html>
