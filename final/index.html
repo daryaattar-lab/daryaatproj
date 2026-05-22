@@ -1,0 +1,157 @@
+<html>
+  <head>
+    <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.7.0/dist/aframe-extras.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/aframe-blink-controls/dist/aframe-blink-controls.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-cursor-teleport@1.6.0/dist/aframe-cursor-teleport-component.min.js"></script>
+
+    <script src="./go-to.js"></script>
+
+    <script>
+      AFRAME.registerComponent("elevator-up", {
+        init: function () {
+          this.el.addEventListener("click", () => {
+            document.querySelector("#doors").removeAttribute("animation-mixer");
+
+            document
+              .querySelector("#doors")
+              .setAttribute(
+                "animation-mixer",
+                "clip:*;loop:once;clampWhenFinished:true",
+              );
+
+            document
+              .querySelector("#elevatorFloor")
+              .setAttribute(
+                "animation",
+                "property:position;to:0 5 0;dur:2000;easing:easeInOutQuad",
+              );
+          });
+        },
+      });
+
+      AFRAME.registerComponent("elevator-down", {
+        init: function () {
+          this.el.addEventListener("click", () => {
+            document
+              .querySelector("#elevatorFloor")
+              .setAttribute(
+                "animation",
+                "property:position;to:0 0 0;dur:2000;easing:easeInOutQuad",
+              );
+          });
+        },
+      });
+    </script>
+  </head>
+
+  <body>
+    <a-scene cursor="rayOrigin: mouse" raycaster="objects: .clickable">
+      <a-assets>
+        <a-asset-item id="walls" src="Room walls.glb"></a-asset-item>
+        <a-asset-item id="UP" src="elevator button up.glb"></a-asset-item>
+        <a-asset-item id="DOWN" src="elevator button down.glb"></a-asset-item>
+        <a-asset-item id="floor" src="elevator floor.glb"></a-asset-item>
+        <a-asset-item id="doorModel" src="elevator doors.glb"></a-asset-item>
+        <a-asset-item id="el-extra" src="elevator extra.glb"></a-asset-item>
+        <a-asset-item id="fullfloor" src="FLOOR.glb"></a-asset-item>
+        <a-asset-item id="room1" src="room 1.glb"></a-asset-item>
+      </a-assets>
+
+      <a-entity
+        id="cameraRig"
+        cursor-teleport="cameraHead: #head; cameraRig: #cameraRig"
+        position="-1 -5.4 -14"
+        rotation="0 180 0"
+      >
+        <a-entity id="head" camera look-controls position="0 1.6 0"></a-entity>
+
+        <a-entity
+          laser-controls="hand: left"
+          raycaster="objects: .clickable"
+          line="color: red; opacity: 0.75"
+          blink-controls="collisionEntities: .collision; cameraRig: #cameraRig; teleportOrigin: #head"
+        ></a-entity>
+
+        <a-entity
+          laser-controls="hand: right"
+          raycaster="objects: .clickable"
+          line="color: red; opacity: 0.75"
+          blink-controls="collisionEntities: .collision; cameraRig: #cameraRig; teleportOrigin: #head"
+        ></a-entity>
+      </a-entity>
+
+      <a-gltf-model
+        src="#walls"
+        class="nav-mesh collision clickable"
+        position="0 0 0"
+        rotation="0 0 0"
+        scale="5 5 5"
+      ></a-gltf-model>
+
+      <a-gltf-model
+        src="#UP"
+        class="clickable"
+        position="0 0 0"
+        rotation="0 0 0"
+        scale="5 5 5"
+        go-to="position: -1 0 -14"
+        elevator-up
+      ></a-gltf-model>
+
+      <a-gltf-model
+        src="#DOWN"
+        class="clickable"
+        position="0 0 0"
+        rotation="0 0 0"
+        scale="5 5 5"
+        go-to="position: -1 -5.4 -14"
+        elevator-down
+      ></a-gltf-model>
+
+      <a-gltf-model
+        id="elevatorFloor"
+        src="#floor"
+        position="0 0 0"
+        rotation="0 0 0"
+        scale="5 5 5"
+      ></a-gltf-model>
+
+      <a-gltf-model
+        id="doors"
+        src="#doorModel"
+        position="0.2 0 0.13"
+        rotation="0 0 0"
+        scale="5 5 5"
+      ></a-gltf-model>
+      <a-gltf-model
+        src="#el-extra"
+        position="0 0 0"
+        rotation="0 0 0"
+        scale="5 5 5"
+      ></a-gltf-model>
+      <a-gltf-model
+        src="#room1"
+        position="0 0 0"
+        rotation="0 0 0"
+        scale="5 5 5"
+      ></a-gltf-model>
+      <a-gltf-model
+        src="#fullfloor"
+        position="0 0 0"
+        rotation="0 0 0"
+        scale="5 5 5"
+      ></a-gltf-model>
+      <a-entity
+        light="color: #ffffff; decay: -0.21; intensity: 1.09; type: point; castShadow: true; shadowBias: -0.16"
+        data-aframe-default-light=""
+        aframe-injected=""
+        position="-0.73451 2.91259 -12.95304"
+        id="EL-light"
+        rotation="-85.0252179240288 -37.26975865766978 34.07551894981545"
+      ></a-entity>
+
+      <a-sky color="gray"></a-sky>
+    </a-scene>
+  </body>
+</html>
