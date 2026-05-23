@@ -49,22 +49,30 @@
     <a-scene cursor="rayOrigin: mouse" raycaster="objects: .clickable">
       <a-assets>
         <a-asset-item id="walls" src="Room walls.glb"></a-asset-item>
+        <a-asset-item id="full floor" src="FLOOR.glb"></a-asset-item>
         <a-asset-item id="UP" src="elevator button up.glb"></a-asset-item>
         <a-asset-item id="DOWN" src="elevator button down.glb"></a-asset-item>
         <a-asset-item id="floor" src="elevator floor.glb"></a-asset-item>
         <a-asset-item id="doorModel" src="elevator doors.glb"></a-asset-item>
         <a-asset-item id="el-extra" src="elevator extra.glb"></a-asset-item>
-        <a-asset-item id="fullfloor" src="FLOOR.glb"></a-asset-item>
+        <a-asset-item id="intfloor1" src="int-floor1.glb"></a-asset-item>
         <a-asset-item id="room1" src="room 1.glb"></a-asset-item>
+        <a-asset-item id="lamp" src="1-lampfull.glb"></a-asset-item>
+        <a-asset-item id="button" src="1-lamp.glb"></a-asset-item>
       </a-assets>
 
       <a-entity
         id="cameraRig"
-        cursor-teleport="cameraHead: #head; cameraRig: #cameraRig"
+        cursor-teleport="cameraHead: #head; cameraRig: #cameraRig; collisionEntities: .collision; ignoreEntities: .ignoreEntities"
         position="-1 -5.4 -14"
         rotation="0 180 0"
       >
-        <a-entity id="head" camera look-controls position="0 1.6 0"></a-entity>
+        <a-entity
+          id="head"
+          camera="fov:100"
+          look-controls
+          position="0 2.5 0"
+        ></a-entity>
 
         <a-entity
           laser-controls="hand: left"
@@ -83,10 +91,19 @@
 
       <a-gltf-model
         src="#walls"
-        class="nav-mesh collision clickable"
+        class="ignoreEntities"
         position="0 0 0"
         rotation="0 0 0"
         scale="5 5 5"
+        shadow="cast:true;receive:true"
+      ></a-gltf-model>
+      <a-gltf-model
+        src="#full floor"
+        class="collision clickable"
+        position="0 0 0"
+        rotation="0 0 0"
+        scale="5 5 5"
+        shadow="cast:true;receive:true"
       ></a-gltf-model>
 
       <a-gltf-model
@@ -105,7 +122,7 @@
         position="0 0 0"
         rotation="0 0 0"
         scale="5 5 5"
-        go-to="position: -1 -5.4 -14"
+        go-to="position: -1 -6 -14"
         elevator-down
       ></a-gltf-model>
 
@@ -115,6 +132,7 @@
         position="0 0 0"
         rotation="0 0 0"
         scale="5 5 5"
+        shadow="cast:true;receive:true"
       ></a-gltf-model>
 
       <a-gltf-model
@@ -123,35 +141,59 @@
         position="0.2 0 0.13"
         rotation="0 0 0"
         scale="5 5 5"
+        shadow="cast:true;receive:true"
       ></a-gltf-model>
       <a-gltf-model
         src="#el-extra"
         position="0 0 0"
         rotation="0 0 0"
         scale="5 5 5"
+        shadow="cast:true;receive:true"
       ></a-gltf-model>
       <a-gltf-model
         src="#room1"
         position="0 0 0"
         rotation="0 0 0"
         scale="5 5 5"
+        shadow="cast:true;receive:true"
       ></a-gltf-model>
       <a-gltf-model
-        src="#fullfloor"
+        src="#intfloor1"
+        id="floor1walkable"
+        class="collision clickable"
         position="0 0 0"
         rotation="0 0 0"
         scale="5 5 5"
+        shadow="cast:true;receive:true"
       ></a-gltf-model>
-      <a-entity
-        light="color: #ffffff; decay: -0.21; intensity: 1.09; type: point; castShadow: true; shadowBias: -0.16"
-        data-aframe-default-light=""
-        aframe-injected=""
-        position="-0.73451 2.91259 -12.95304"
-        id="EL-light"
-        rotation="-85.0252179240288 -37.26975865766978 34.07551894981545"
+      <a-gltf-model
+        src="#lamp"
+        position="6.504 -0.02 -8.31126"
+        rotation="0 110 0"
+        scale="5 5 5"
+        gltf-model="1-lampfull.glb"
+      ></a-gltf-model>
+      <a-gltf-model
+        src="#button"
+        position="-0.55 -0.01 3.03164"
+        scale="5 5 5"
+        gltf-model="1-lamp.glb"
+      ></a-gltf-model>
+
+      ><a-entity
+        id="El-light"
+        light="angle: 80; color: #fff5cc; distance: 20; intensity: 4; penumbra: 0.6; type: spot; castShadow: true; shadowBias: -0.005; shadowMapHeight: 2048; shadowMapWidth: 2048"
+        position="-0.80629 3.90425 -13"
+        rotation="-90 0 0"
+      ></a-entity
+      ><a-entity
+        id="room1-ligt"
+        light="angle: 80; color: #fff5cc; distance: 20; intensity: 4; penumbra: 0.6; type: spot; castShadow: true; shadowBias: -0.005; shadowMapHeight: 2048; shadowMapWidth: 2048"
+        position="-0.10639 3.32433 -7.24211"
+        rotation="-90 0 0"
       ></a-entity>
 
-      <a-sky color="gray"></a-sky>
+      <a-sky color="black"></a-sky>
     </a-scene>
   </body>
 </html>
