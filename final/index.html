@@ -12,14 +12,12 @@
         init: function () {
           this.el.addEventListener("click", () => {
             document.querySelector("#doors").removeAttribute("animation-mixer");
-
             document
               .querySelector("#doors")
               .setAttribute(
                 "animation-mixer",
                 "clip:*;loop:once;clampWhenFinished:true",
               );
-
             document
               .querySelector("#elevatorFloor")
               .setAttribute(
@@ -42,6 +40,127 @@
           });
         },
       });
+
+      AFRAME.registerComponent("lamp-switch", {
+        init: function () {
+          this.el.sceneEl.addEventListener("loaded", () => {
+            const lampLight = document.querySelector("#lamplight-int");
+            const roomLight = document.querySelector("#room1-ligt");
+            const roomDoor = document.querySelector("#room-door");
+
+            if (lampLight) lampLight.setAttribute("light", "intensity", 0);
+            if (roomLight) roomLight.setAttribute("light", "intensity", 2);
+
+            this.el.addEventListener("click", () => {
+              if (lampLight) {
+                lampLight.setAttribute(
+                  "animation",
+                  "property: light.intensity; from: 0; to: 4; dur: 1500; easing: easeOutQuad",
+                );
+              }
+
+              if (roomLight) {
+                roomLight.setAttribute(
+                  "animation",
+                  "property: light.intensity; from: 2; to: 8; dur: 1500; easing: easeOutQuad",
+                );
+              }
+
+              if (roomDoor) {
+                roomDoor.removeAttribute("animation");
+                roomDoor.removeAttribute("animation-mixer");
+
+                roomDoor.setAttribute(
+                  "animation-mixer",
+                  "clip: OPEN; loop: once; clampWhenFinished: true",
+                );
+
+                const triggerZone = document.querySelector("#close-trigger");
+                if (triggerZone) {
+                  triggerZone.components["door-closer"].hasClosed = false;
+                }
+              }
+            });
+          });
+        },
+      });
+
+      AFRAME.registerComponent("door-closer", {
+        init: function () {
+          this.playerHead = document.querySelector("#head");
+          this.hasClosed = true;
+          this.playerWorldPos = new THREE.Vector3();
+          this.triggerWorldPos = new THREE.Vector3();
+        },
+        tick: function () {
+          if (this.hasClosed) return;
+          if (!this.playerHead) return;
+
+          this.playerHead.object3D.getWorldPosition(this.playerWorldPos);
+          this.el.object3D.getWorldPosition(this.triggerWorldPos);
+
+          this.playerWorldPos.y = 0;
+          this.triggerWorldPos.y = 0;
+
+          let distance = this.playerWorldPos.distanceTo(this.triggerWorldPos);
+
+          if (distance < 3.0) {
+            const roomDoor = document.querySelector("#room-door");
+            if (roomDoor) {
+              roomDoor.removeAttribute("animation-mixer");
+              roomDoor.setAttribute(
+                "animation",
+                "property: rotation; to: 0 0 0; dur: 1500; easing: easeInOutQuad",
+              );
+              this.hasClosed = true;
+              console.log("Player entered Room 2. Door safely rotated shut!");
+            }
+          }
+        },
+      });
+
+      // CLEANLY SEPARATED INTERACTIVE SWAP LOGIC
+      AFRAME.registerComponent("interactive-frame", {
+        init: function () {
+          window.isCarryingFrame = false;
+
+          // 1. Click the floor frame to pick it up
+          this.el.addEventListener("click", () => {
+            if (!window.isCarryingFrame) {
+              window.isCarryingFrame = true;
+              console.log("Floor frame picked up!");
+
+              this.el.setAttribute("visible", "false");
+              this.el.classList.remove("clickable");
+            }
+          });
+
+          // 2. Click the nail to reveal frame2 (Checks globally for state)
+          this.el.sceneEl.addEventListener("loaded", () => {
+            const nail = document.querySelector("#nail");
+            const frameOnWall = document.querySelector("#frame2");
+
+            if (nail) {
+              nail.addEventListener("click", () => {
+                if (window.isCarryingFrame) {
+                  window.isCarryingFrame = false;
+                  console.log("Wall frame revealed on the nail!");
+
+                  if (frameOnWall) {
+                    frameOnWall.setAttribute("visible", "true");
+                  }
+
+                  nail.classList.remove("clickable");
+                } else {
+                  console.log(
+                    "You clicked the nail, but you aren't carrying a frame yet!",
+                  );
+                }
+              });
+            }
+          });
+        },
+      });
     </script>
   </head>
 
@@ -59,6 +178,14 @@
         <a-asset-item id="room1" src="room 1.glb"></a-asset-item>
         <a-asset-item id="lamp" src="1-lampfull.glb"></a-asset-item>
         <a-asset-item id="button" src="1-lamp.glb"></a-asset-item>
+        <a-asset-item id="door1" src="door 1.glb"></a-asset-item>
+        <a-asset-item id="intfloor2" src="int-floor2.glb"></a-asset-item>
+        <a-asset-item id="room2" src="room 2.glb"></a-asset-item>
+        <a-asset-item id="clock" src="clock.glb"></a-asset-item>
+        <a-asset-item id="frame" src="frame.glb"></a-asset-item>
+        <a-asset-item id="nail" src="nail.glb"></a-asset-item>
+        <a-asset-item id="door2" src="door 2.glb"></a-asset-item>
+        <a-asset-item id="frame2" src="frame2.glb"></a-asset-item>
       </a-assets>
 
       <a-entity
@@ -69,18 +196,16 @@
       >
         <a-entity
           id="head"
-          camera="fov:100"
+          camera="fov:80"
           look-controls
           position="0 2.5 0"
         ></a-entity>
-
         <a-entity
           laser-controls="hand: left"
           raycaster="objects: .clickable"
           line="color: red; opacity: 0.75"
           blink-controls="collisionEntities: .collision; cameraRig: #cameraRig; teleportOrigin: #head"
         ></a-entity>
-
         <a-entity
           laser-controls="hand: right"
           raycaster="objects: .clickable"
@@ -99,12 +224,19 @@
       ></a-gltf-model>
       <a-gltf-model
         src="#full floor"
-        class="collision clickable"
+        class="ignoreEntities"
         position="0 0 0"
         rotation="0 0 0"
         scale="5 5 5"
         shadow="cast:true;receive:true"
       ></a-gltf-model>
+
+      <a-entity
+        id="El-light"
+        light="angle: 80; color: #fff5cc; distance: 20; intensity: 4; penumbra: 0.6; type: spot; castShadow: true; shadowBias: -0.005; shadowMapHeight: 2048; shadowMapWidth: 2048"
+        position="-0.80629 3.90425 -13"
+        rotation="-90 0 0"
+      ></a-entity>
 
       <a-gltf-model
         src="#UP"
@@ -115,7 +247,6 @@
         go-to="position: -1 0 -14"
         elevator-up
       ></a-gltf-model>
-
       <a-gltf-model
         src="#DOWN"
         class="clickable"
@@ -125,7 +256,6 @@
         go-to="position: -1 -6 -14"
         elevator-down
       ></a-gltf-model>
-
       <a-gltf-model
         id="elevatorFloor"
         src="#floor"
@@ -134,7 +264,6 @@
         scale="5 5 5"
         shadow="cast:true;receive:true"
       ></a-gltf-model>
-
       <a-gltf-model
         id="doors"
         src="#doorModel"
@@ -160,38 +289,136 @@
       <a-gltf-model
         src="#intfloor1"
         id="floor1walkable"
-        class="collision clickable"
+        class="collision ignoreEntities"
+        position="0 0 0"
+        rotation="0 0 0"
+        scale="5 5 5"
+        shadow="cast:true;receive:true"
+      ></a-gltf-model>
+
+      <a-gltf-model
+        src="#lamp"
+        id="lamp"
+        position="7.07097 0 -6.78548"
+        rotation="0 100 0"
+        scale="5 5 5"
+        shadow="cast:true;receive:true"
+      ></a-gltf-model>
+      <a-gltf-model
+        src="#button"
+        id="lampbutton"
+        class="clickable"
+        position="7.07097 0 -6.78548"
+        rotation="0 100 0"
+        scale="5 5 5"
+        shadow="cast:true;receive:true"
+        lamp-switch
+      ></a-gltf-model>
+
+      <a-entity
+        id="lamplight-int"
+        light="angle: 80; color: #ffdf5e; distance: 20; intensity: 4; penumbra: 0.6; type: spot; castShadow: true; shadowBias: -0.005; shadowMapHeight: 2048; shadowMapWidth: 2048"
+        position="-0.56902 1.33095 -5.00121"
+        rotation="-90 0 0"
+      ></a-entity>
+      <a-entity
+        id="room1-ligt"
+        light="angle: 80; color: #fff5cc; distance: 20; intensity: 2; penumbra: 0.6; type: spot; castShadow: true; shadowBias: -0.005; shadowMapHeight: 2048; shadowMapWidth: 2048"
+        position="-0.10639 3.32433 -7.24211"
+        rotation="-90 0 0"
+      ></a-entity>
+
+      <a-gltf-model
+        src="#door1"
+        id="room-door"
+        class="ignoreEntities"
+        position="0 0 0"
+        rotation="0 0 0"
+        scale="5 5 5"
+        shadow="cast:true;receive:true"
+      ></a-gltf-model>
+
+      <a-box
+        id="close-trigger"
+        position="-9.19 0 -5.27"
+        scale="4 4 4"
+        visible="false"
+        door-closer
+      ></a-box>
+
+      <a-gltf-model
+        src="#room2"
+        id="room2"
         position="0 0 0"
         rotation="0 0 0"
         scale="5 5 5"
         shadow="cast:true;receive:true"
       ></a-gltf-model>
       <a-gltf-model
-        src="#lamp"
-        position="6.504 -0.02 -8.31126"
-        rotation="0 110 0"
+        src="#intfloor2"
+        id="floor2walkable"
+        class="collision ignoreEntities"
+        position="0 0 0"
+        rotation="0 0 0"
         scale="5 5 5"
-        gltf-model="1-lampfull.glb"
-      ></a-gltf-model>
-      <a-gltf-model
-        src="#button"
-        position="-0.55 -0.01 3.03164"
-        scale="5 5 5"
-        gltf-model="1-lamp.glb"
+        shadow="cast:true;receive:true"
       ></a-gltf-model>
 
-      ><a-entity
-        id="El-light"
-        light="angle: 80; color: #fff5cc; distance: 20; intensity: 4; penumbra: 0.6; type: spot; castShadow: true; shadowBias: -0.005; shadowMapHeight: 2048; shadowMapWidth: 2048"
-        position="-0.80629 3.90425 -13"
-        rotation="-90 0 0"
-      ></a-entity
-      ><a-entity
-        id="room1-ligt"
-        light="angle: 80; color: #fff5cc; distance: 20; intensity: 4; penumbra: 0.6; type: spot; castShadow: true; shadowBias: -0.005; shadowMapHeight: 2048; shadowMapWidth: 2048"
-        position="-0.10639 3.32433 -7.24211"
+      <a-entity
+        id="room2-light"
+        light="angle: 90; color: #fff5cc; distance: 20; intensity: 8; penumbra: 0.22; type: spot; castShadow: true; shadowBias: -0.005; shadowMapHeight: 2048; shadowMapWidth: 2048"
+        position="-10.05662 2.97895 -4.91449"
         rotation="-90 0 0"
       ></a-entity>
+
+      <a-gltf-model
+        src="#frame"
+        id="frame"
+        class="clickable"
+        position="0 0 0"
+        rotation="0 0 0"
+        scale="5 5 5"
+        shadow="cast:true;receive:true"
+        interactive-frame
+      ></a-gltf-model>
+
+      <a-gltf-model
+        src="#frame2"
+        id="frame2"
+        position="0 0 0"
+        rotation="0 0 0"
+        scale="5 5 5"
+        visible="false"
+        shadow="cast:true"
+      ></a-gltf-model>
+
+      <a-gltf-model
+        src="#nail"
+        id="nail"
+        class="clickable"
+        position="0 0 0"
+        rotation="0 0 0"
+        scale="5 5 5"
+        shadow="cast:true;receive:true"
+      ></a-gltf-model>
+
+      <a-gltf-model
+        src="#clock"
+        id="clock"
+        position="0 0 0"
+        rotation="0 0 0"
+        scale="5 5 5"
+        shadow="cast:true;receive:true"
+      ></a-gltf-model>
+      <a-gltf-model
+        src="#door2"
+        id="room-door2"
+        class="ignoreEntities"
+        position="0 0 0"
+        rotation="0 0 0"
+        scale="5 5 5"
+        shadow="cast:true;receive:true"
+      ></a-gltf-model>
 
       <a-sky color="black"></a-sky>
     </a-scene>
