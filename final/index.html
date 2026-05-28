@@ -4,7 +4,6 @@
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.7.0/dist/aframe-extras.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/aframe-blink-controls/dist/aframe-blink-controls.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-cursor-teleport@1.6.0/dist/aframe-cursor-teleport-component.min.js"></script>
-
     <script src="./go-to.js"></script>
 
     <script>
@@ -85,6 +84,7 @@
         },
       });
 
+      // MODIFIED: CLOSES THE DOOR AND SOUNDS THE ALARM SCRIPT
       AFRAME.registerComponent("door-closer", {
         init: function () {
           this.playerHead = document.querySelector("#head");
@@ -115,16 +115,27 @@
               this.hasClosed = true;
               console.log("Player entered Room 2. Door safely rotated shut!");
             }
+
+            // Trigger the clock alarm sound automatically upon entry
+            const clockEl = document.querySelector("#clock-entity");
+            if (clockEl && clockEl.components.sound) {
+              console.log("Player entered Room 2! Sounding the alarm...");
+              clockEl.components.sound.stopSound();
+              clockEl.components.sound.playSound();
+
+              // Let the alarm-clock component know it is playing
+              if (clockEl.components["alarm-clock"]) {
+                clockEl.components["alarm-clock"].isPlaying = true;
+              }
+            }
           }
         },
       });
 
-      // CLEANLY SEPARATED INTERACTIVE SWAP LOGIC
       AFRAME.registerComponent("interactive-frame", {
         init: function () {
           window.isCarryingFrame = false;
 
-          // 1. Click the floor frame to pick it up
           this.el.addEventListener("click", () => {
             if (!window.isCarryingFrame) {
               window.isCarryingFrame = true;
@@ -135,10 +146,9 @@
             }
           });
 
-          // 2. Click the nail to reveal frame2 (Checks globally for state)
           this.el.sceneEl.addEventListener("loaded", () => {
-            const nail = document.querySelector("#nail");
-            const frameOnWall = document.querySelector("#frame2");
+            const nail = document.querySelector("#nail-entity");
+            const frameOnWall = document.querySelector("#frame2-entity");
 
             if (nail) {
               nail.addEventListener("click", () => {
@@ -158,6 +168,28 @@
                 }
               });
             }
+          });
+        },
+      });
+
+      // MODIFIED: HANDLES TURNING OFF THE ALARM WHEN CLICKED
+      AFRAME.registerComponent("alarm-clock", {
+        init: function () {
+          this.isPlaying = false; // Turned to true by door-closer when entering room
+
+          this.el.addEventListener("click", () => {
+            const soundComponent = this.el.components.sound;
+            if (soundComponent && this.isPlaying) {
+              console.log("Clock clicked! Stopping the alarm.");
+              soundComponent.stopSound();
+              this.isPlaying = false;
+            } else {
+              console.log("Clock clicked, but the alarm wasn't ringing.");
+            }
+          });
+
+          this.el.addEventListener("sound-ended", () => {
+            this.isPlaying = false;
           });
         },
       });
@@ -186,6 +218,7 @@
         <a-asset-item id="nail" src="nail.glb"></a-asset-item>
         <a-asset-item id="door2" src="door 2.glb"></a-asset-item>
         <a-asset-item id="frame2" src="frame2.glb"></a-asset-item>
+        <audio id="alarm-sound" src="clock alarm.mp3" preload="auto"></audio>
       </a-assets>
 
       <a-entity
@@ -384,7 +417,7 @@
 
       <a-gltf-model
         src="#frame2"
-        id="frame2"
+        id="frame2-entity"
         position="0 0 0"
         rotation="0 0 0"
         scale="5 5 5"
@@ -394,7 +427,7 @@
 
       <a-gltf-model
         src="#nail"
-        id="nail"
+        id="nail-entity"
         class="clickable"
         position="0 0 0"
         rotation="0 0 0"
@@ -404,12 +437,15 @@
 
       <a-gltf-model
         src="#clock"
-        id="clock"
-        position="0 0 0"
-        rotation="0 0 0"
+        id="clock-entity"
+        class="clickable"
         scale="5 5 5"
-        shadow="cast:true;receive:true"
+        shadow=""
+        sound="autoplay: true; loop: true; src: clock alarm.mp3"
+        alarm-clock=""
+        gltf-model="clock.glb"
       ></a-gltf-model>
+
       <a-gltf-model
         src="#door2"
         id="room-door2"
