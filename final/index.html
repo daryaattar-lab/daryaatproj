@@ -1,11 +1,13 @@
+<!doctype html>
 <html>
   <head>
+    <meta charset="utf-8" />
+    <title>Mind Scape</title>
     <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.7.0/dist/aframe-extras.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/aframe-blink-controls/dist/aframe-blink-controls.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-cursor-teleport@1.6.0/dist/aframe-cursor-teleport-component.min.js"></script>
     <script src="./go-to.js"></script>
-
     <script>
       AFRAME.registerComponent("elevator-up", {
         init: function () {
@@ -15,13 +17,13 @@
               .querySelector("#doors")
               .setAttribute(
                 "animation-mixer",
-                "clip:*;loop:once;clampWhenFinished:true",
+                "clip:*; loop:once;clampWhenFinished: true",
               );
             document
               .querySelector("#elevatorFloor")
               .setAttribute(
                 "animation",
-                "property:position;to:0 5 0;dur:2000;easing:easeInOutQuad",
+                "property:position;to:0 5 0;dur: 2000;easing: easeInOutQuad",
               );
           });
         },
@@ -34,7 +36,7 @@
               .querySelector("#elevatorFloor")
               .setAttribute(
                 "animation",
-                "property:position;to:0 0 0;dur:2000;easing:easeInOutQuad",
+                "property:position;to:0 0 0;dur: 2000;easing: easeInOutQuad",
               );
           });
         },
@@ -46,37 +48,35 @@
             const lampLight = document.querySelector("#lamplight-int");
             const roomLight = document.querySelector("#room1-ligt");
             const roomDoor = document.querySelector("#room-door");
-
             if (lampLight) lampLight.setAttribute("light", "intensity", 0);
             if (roomLight) roomLight.setAttribute("light", "intensity", 2);
 
             this.el.addEventListener("click", () => {
               if (lampLight) {
-                lampLight.setAttribute(
-                  "animation",
-                  "property: light.intensity; from: 0; to: 4; dur: 1500; easing: easeOutQuad",
-                );
+                lampLight.setAttribute("animation", {
+                  property: "light.intensity",
+                  from: 0,
+                  to: 4,
+                  dur: 1500,
+                  easing: "easeOutQuad",
+                });
               }
-
               if (roomLight) {
                 roomLight.setAttribute(
                   "animation",
                   "property: light.intensity; from: 2; to: 8; dur: 1500; easing: easeOutQuad",
                 );
               }
-
               if (roomDoor) {
                 roomDoor.removeAttribute("animation");
                 roomDoor.removeAttribute("animation-mixer");
-
                 roomDoor.setAttribute(
                   "animation-mixer",
-                  "clip: OPEN; loop: once; clampWhenFinished: true",
+                  "clip: *; loop: once; clampWhenFinished: true",
                 );
-
-                const triggerZone = document.querySelector("#close-trigger");
-                if (triggerZone) {
-                  triggerZone.components["door-closer"].hasClosed = false;
+                const triggerzone = document.querySelector("#close-trigger");
+                if (triggerzone) {
+                  triggerzone.components["door-closer"].hasClosed = false;
                 }
               }
             });
@@ -84,8 +84,12 @@
         },
       });
 
-      // MODIFIED: CLOSES THE DOOR AND SOUNDS THE ALARM SCRIPT
       AFRAME.registerComponent("door-closer", {
+        schema: {
+          doorTarget: { type: "selector" },
+          isAnimatedGlb: { type: "boolean", default: false },
+          closeDistance: { type: "number", default: 5.0 },
+        },
         init: function () {
           this.playerHead = document.querySelector("#head");
           this.hasClosed = true;
@@ -93,41 +97,45 @@
           this.triggerWorldPos = new THREE.Vector3();
         },
         tick: function () {
-          if (this.hasClosed) return;
-          if (!this.playerHead) return;
-
+          if (this.hasClosed || !this.playerHead || !this.data.doorTarget)
+            return;
           this.playerHead.object3D.getWorldPosition(this.playerWorldPos);
           this.el.object3D.getWorldPosition(this.triggerWorldPos);
-
           this.playerWorldPos.y = 0;
           this.triggerWorldPos.y = 0;
-
           let distance = this.playerWorldPos.distanceTo(this.triggerWorldPos);
-
-          if (distance < 3.0) {
-            const roomDoor = document.querySelector("#room-door");
-            if (roomDoor) {
-              roomDoor.removeAttribute("animation-mixer");
-              roomDoor.setAttribute(
+          if (distance < this.data.closeDistance) {
+            const targetDoor = this.data.doorTarget;
+            if (this.data.isAnimatedGlb) {
+              targetDoor.removeAttribute("animation-mixer");
+              let clipName = "*";
+              if (targetDoor.id === "room-door2") {
+                clipName = "door 2Action";
+              } else if (targetDoor.id === "door3-entity") {
+                clipName = "door 3Action";
+              } else if (targetDoor.id === "door4-entity") {
+                clipName = "open";
+              } else if (targetDoor.id === "door5-entity") {
+                clipName = "*";
+              }
+              targetDoor.setAttribute(
+                "animation-mixer",
+                `clip: ${clipName}; loop: once; clampWhenFinished: true; timeScale: -1`,
+              );
+              console.log(
+                "Player safely inside next room. " +
+                  targetDoor.id +
+                  " closing.",
+              );
+            } else {
+              targetDoor.removeAttribute("animation-mixer");
+              targetDoor.setAttribute(
                 "animation",
                 "property: rotation; to: 0 0 0; dur: 1500; easing: easeInOutQuad",
               );
-              this.hasClosed = true;
-              console.log("Player entered Room 2. Door safely rotated shut!");
+              console.log("Player entered Room. Door rotated shut!");
             }
-
-            // Trigger the clock alarm sound automatically upon entry
-            const clockEl = document.querySelector("#clock-entity");
-            if (clockEl && clockEl.components.sound) {
-              console.log("Player entered Room 2! Sounding the alarm...");
-              clockEl.components.sound.stopSound();
-              clockEl.components.sound.playSound();
-
-              // Let the alarm-clock component know it is playing
-              if (clockEl.components["alarm-clock"]) {
-                clockEl.components["alarm-clock"].isPlaying = true;
-              }
-            }
+            this.hasClosed = true;
           }
         },
       });
@@ -135,12 +143,10 @@
       AFRAME.registerComponent("interactive-frame", {
         init: function () {
           window.isCarryingFrame = false;
-
           this.el.addEventListener("click", () => {
             if (!window.isCarryingFrame) {
               window.isCarryingFrame = true;
               console.log("Floor frame picked up!");
-
               this.el.setAttribute("visible", "false");
               this.el.classList.remove("clickable");
             }
@@ -149,22 +155,35 @@
           this.el.sceneEl.addEventListener("loaded", () => {
             const nail = document.querySelector("#nail-entity");
             const frameOnWall = document.querySelector("#frame2-entity");
-
+            const roomDoor2 = document.querySelector("#room-door2");
+            const room2Light = document.querySelector("#room2-light");
             if (nail) {
               nail.addEventListener("click", () => {
                 if (window.isCarryingFrame) {
                   window.isCarryingFrame = false;
                   console.log("Wall frame revealed on the nail!");
-
                   if (frameOnWall) {
                     frameOnWall.setAttribute("visible", "true");
                   }
-
+                  if (room2Light) {
+                    room2Light.setAttribute(
+                      "animation",
+                      "property: light.intensity; from: 5; to: 8; dur: 1500; easing: easeOutQuad",
+                    );
+                  }
+                  if (roomDoor2) {
+                    roomDoor2.removeAttribute("animation-mixer");
+                    roomDoor2.setAttribute(
+                      "animation-mixer",
+                      "clip: door 2Action; loop: once; clampWhenFinished: true; timeScale: 1",
+                    );
+                    const triggerZone3 =
+                      document.querySelector("#room3-trigger");
+                    if (triggerZone3) {
+                      triggerZone3.components["door-closer"].hasClosed = false;
+                    }
+                  }
                   nail.classList.remove("clickable");
-                } else {
-                  console.log(
-                    "You clicked the nail, but you aren't carrying a frame yet!",
-                  );
                 }
               });
             }
@@ -172,32 +191,237 @@
         },
       });
 
-      // MODIFIED: HANDLES TURNING OFF THE ALARM WHEN CLICKED
-      AFRAME.registerComponent("alarm-clock", {
+      AFRAME.registerComponent("board-fade", {
         init: function () {
-          this.isPlaying = false; // Turned to true by door-closer when entering room
-
+          this.clickCount = 0;
+          this.currentOpacity = 1.0;
           this.el.addEventListener("click", () => {
-            const soundComponent = this.el.components.sound;
-            if (soundComponent && this.isPlaying) {
-              console.log("Clock clicked! Stopping the alarm.");
-              soundComponent.stopSound();
-              this.isPlaying = false;
-            } else {
-              console.log("Clock clicked, but the alarm wasn't ringing.");
+            if (this.clickCount >= 5) return;
+            this.clickCount++;
+            this.currentOpacity -= 0.2;
+            const mesh = this.el.getObject3D("mesh");
+            if (mesh) {
+              mesh.traverse((node) => {
+                if (node.isMesh && node.material) {
+                  node.material.transparent = true;
+                  node.material.opacity = this.currentOpacity;
+                  node.material.needsUpdate = true;
+                }
+              });
+            }
+            if (this.clickCount >= 5) {
+              this.el.setAttribute("visible", "false");
+              this.el.classList.remove("clickable");
+              console.log("Image is gone! Activating Room 3 sequence...");
+              const light1 = document.querySelector("#room3-light");
+              if (light1) {
+                light1.setAttribute(
+                  "animation",
+                  "property: light.intensity; from: 4; to: 8; dur: 2000; easing: easeOutQuad",
+                );
+              }
+              const light2 = document.querySelector("#room3-light-2");
+              if (light2) {
+                light2.setAttribute(
+                  "animation",
+                  "property: light.intensity; from: 1; to: 6; dur: 2000; easing: easeOutQuad",
+                );
+              }
+              const door3 = document.querySelector("#door3-entity");
+              if (door3) {
+                door3.removeAttribute("animation-mixer");
+                door3.setAttribute(
+                  "animation-mixer",
+                  "clip: *; loop: once; clampWhenFinished: true; timeScale: 1",
+                );
+                console.log("Door 3 animation triggered.");
+                const triggerZone4 = document.querySelector("#room4-trigger");
+                if (triggerZone4) {
+                  triggerZone4.components["door-closer"].hasClosed = false;
+                }
+              }
             }
           });
+        },
+      });
 
-          this.el.addEventListener("sound-ended", () => {
-            this.isPlaying = false;
+      AFRAME.registerComponent("watering-puzzle", {
+        init: function () {
+          window.isCarryingWatercan = false;
+          this.puzzleSolved = false;
+          const waterCanEl = document.querySelector("#watercan-click");
+          if (waterCanEl) {
+            waterCanEl.addEventListener("click", () => {
+              if (!window.isCarryingWatercan && !this.puzzleSolved) {
+                window.isCarryingWatercan = true;
+                console.log("Water can picked up!");
+                waterCanEl.setAttribute("visible", "false");
+                waterCanEl.classList.remove("clickable");
+              }
+            });
+          }
+          this.el.addEventListener("click", () => {
+            if (window.isCarryingWatercan && !this.puzzleSolved) {
+              this.puzzleSolved = true;
+              console.log(
+                "Small plant watered! Triggering all Room 4 systems...",
+              );
+              this.el.removeAttribute("animation-mixer");
+              this.el.setAttribute(
+                "animation-mixer",
+                "clip: *; loop: once; clampWhenFinished: true",
+              );
+              this.el.classList.remove("clickable");
+              const r4Light1 = document.querySelector("#room4-light-1");
+              const r4Light2 = document.querySelector("#room4-light-2");
+              const door4 = document.querySelector("#door4-entity");
+              if (r4Light1) {
+                r4Light1.setAttribute(
+                  "animation",
+                  "property: light.intensity; from: 3; to: 8; dur: 2000; easing: easeOutQuad",
+                );
+              }
+              if (r4Light2) {
+                r4Light2.setAttribute(
+                  "animation",
+                  "property: light.intensity; from: 3; to: 8; dur: 2000; easing: easeOutQuad",
+                );
+              }
+              if (door4) {
+                door4.removeAttribute("animation-mixer");
+                door4.setAttribute(
+                  "animation-mixer",
+                  "clip: open; loop: once; clampWhenFinished: true; timeScale: 1",
+                );
+                console.log("Door 4 animation opened.");
+                const triggerZone5 = document.querySelector("#room5-trigger");
+                if (triggerZone5 && triggerZone5.components["door-closer"]) {
+                  triggerZone5.components["door-closer"].hasClosed = false;
+                }
+              }
+            }
           });
+        },
+      });
+
+      AFRAME.registerComponent("candle-puzzle", {
+        init: function () {
+          window.isCarryingMatches = false;
+          this.puzzleSolved = false;
+          const matchesEl = document.querySelector("#matches-entity");
+          if (matchesEl) {
+            matchesEl.addEventListener("click", () => {
+              if (!window.isCarryingMatches && !this.puzzleSolved) {
+                window.isCarryingMatches = true;
+                console.log("Matches picked up!");
+                matchesEl.setAttribute("visible", "false");
+                matchesEl.classList.remove("clickable");
+              }
+            });
+          }
+          this.el.addEventListener("click", () => {
+            if (window.isCarryingMatches && !this.puzzleSolved) {
+              this.puzzleSolved = true;
+              console.log("Candle clicked with matches! Lighting Room 5");
+              const candleOff = document.querySelector("#candle-off-entity");
+              const candleOn = document.querySelector("#candle-lit-entity");
+              const r5Light = document.querySelector("#room5-light");
+              const door5 = document.querySelector("#door5-entity");
+              const gameSky = document.querySelector("#gameSky");
+
+              if (candleOff) candleOff.setAttribute("visible", "false");
+              if (candleOn) {
+                candleOn.setAttribute("visible", "true");
+                candleOn.setAttribute(
+                  "animation-mixer",
+                  "clip: flame; loop: repeat",
+                );
+              }
+              if (r5Light) {
+                r5Light.setAttribute(
+                  "animation",
+                  "property: light.intensity; from: 2; to: 8; dur: 2000; easing: easeOutQuad",
+                );
+              }
+              if (door5) {
+                door5.removeAttribute("animation-mixer");
+                door5.setAttribute(
+                  "animation-mixer",
+                  "clip: *; loop: once; clampWhenFinished: true; timeScale: 1",
+                );
+              }
+              if (gameSky) {
+                gameSky.setAttribute(
+                  "animation",
+                  "property: color; from: #000000; to: #ffffff; dur: 3000; easing: easeInOutQuad",
+                );
+              }
+              const triggerZone6 = document.querySelector("#room6-trigger");
+              if (triggerZone6) {
+                triggerZone6.components["door-closer"].hasClosed = false;
+              }
+              this.el.classList.remove("clickable");
+            } else if (!window.isCarryingMatches) {
+              console.log(
+                "Find the matches before trying to light the candle.",
+              );
+            }
+          });
+        },
+      });
+
+      AFRAME.registerComponent("end-game-trigger", {
+        schema: {
+          finishDistance: { type: "number", default: 2.5 },
+        },
+        init: function () {
+          this.playerHead = document.querySelector("#head");
+          this.hasFinished = false;
+          this.playerWorldPos = new THREE.Vector3();
+          this.triggerWorldPos = new THREE.Vector3();
+        },
+        tick: function () {
+          if (this.hasFinished || !this.playerHead) return;
+          const triggerZone6 = document.querySelector("#room6-trigger");
+          if (triggerZone6 && triggerZone6.components["door-closer"].hasClosed)
+            return;
+
+          this.playerHead.object3D.getWorldPosition(this.playerWorldPos);
+          this.el.object3D.getWorldPosition(this.triggerWorldPos);
+          this.playerWorldPos.y = 0;
+          this.triggerWorldPos.y = 0;
+
+          let distance = this.playerWorldPos.distanceTo(this.triggerWorldPos);
+          if (distance < this.data.finishDistance) {
+            this.hasFinished = true;
+            console.log("End of Room 6 reached! Initiating grand finale...");
+            const endFade = document.querySelector("#endFade");
+            if (endFade) {
+              endFade.setAttribute("visible", "true");
+              endFade.setAttribute(
+                "animation",
+                "property: material.opacity; from: 0; to: 1; dur: 3000; easing: easeInQuad",
+              );
+            }
+            const endText = document.querySelector("#endText");
+            if (endText) {
+              setTimeout(() => {
+                endText.setAttribute("visible", "true");
+              }, 3000);
+            }
+          }
         },
       });
     </script>
   </head>
-
   <body>
-    <a-scene cursor="rayOrigin: mouse" raycaster="objects: .clickable">
+    <a-scene
+      cursor="rayOrigin: mouse"
+      raycaster="objects: .clickable; far: 50"
+      renderer="colorManagement: true; tonemapping: linear; sortObjects: true"
+      light="defaultLightsEnabled: false"
+      shadow="type: pcfsoft; autoUpdate: true"
+    >
       <a-assets>
         <a-asset-item id="walls" src="Room walls.glb"></a-asset-item>
         <a-asset-item id="full floor" src="FLOOR.glb"></a-asset-item>
@@ -218,8 +442,31 @@
         <a-asset-item id="nail" src="nail.glb"></a-asset-item>
         <a-asset-item id="door2" src="door 2.glb"></a-asset-item>
         <a-asset-item id="frame2" src="frame2.glb"></a-asset-item>
-        <audio id="alarm-sound" src="clock alarm.mp3" preload="auto"></audio>
+        <a-asset-item id="intfloor3" src="int-floor3.glb"></a-asset-item>
+        <a-asset-item id="room3" src="room 3.glb"></a-asset-item>
+        <a-asset-item id="whiteboard" src="whiteboard.glb"></a-asset-item>
+        <a-asset-item id="boardimage" src="board image.glb"></a-asset-item>
+        <a-asset-item id="door3" src="door 3.glb"></a-asset-item>
+        <a-asset-item id="intfloor4" src="int-floor4.glb"></a-asset-item>
+        <a-asset-item id="room4" src="room 4.glb"></a-asset-item>
+        <a-asset-item id="watercan" src="water can.glb"></a-asset-item>
+        <a-asset-item
+          id="smallplant"
+          src="small plant animation.glb"
+        ></a-asset-item>
+        <a-asset-item id="door4" src="door 4.glb"></a-asset-item>
+        <a-asset-item id="intfloor5" src="int-floor5.glb"></a-asset-item>
+        <a-asset-item id="room5" src="room 5.glb"></a-asset-item>
+        <a-asset-item id="candle2" src="candle animation.glb"></a-asset-item>
+        <a-asset-item id="candle1" src="candle off.glb"></a-asset-item>
+        <a-asset-item id="door5" src="door 5.glb"></a-asset-item>
+        <a-asset-item id="matches" src="matches.glb"></a-asset-item>
+        <a-asset-item id="intfloor6" src="int-floor6.glb"></a-asset-item>
       </a-assets>
+
+      <a-entity
+        light="type: ambient; color: #1e1e24; intensity: 0.35"
+      ></a-entity>
 
       <a-entity
         id="cameraRig"
@@ -227,12 +474,24 @@
         position="-1 -5.4 -14"
         rotation="0 180 0"
       >
-        <a-entity
-          id="head"
-          camera="fov:80"
-          look-controls
-          position="0 2.5 0"
-        ></a-entity>
+        <a-entity id="head" camera="fov:80" look-controls position="0 2.5 0">
+          <a-plane
+            id="endFade"
+            position="0 0 -0.1"
+            width="2"
+            height="2"
+            material="color: #ffffff; transparent: true; opacity: 0; shader: flat"
+            visible="false"
+          ></a-plane>
+          <a-text
+            id="endText"
+            value="Mind Scape Completed"
+            color="#000000"
+            width="1.5"
+            position="0 0 -0.5"
+            visible="false"
+          ></a-text>
+        </a-entity>
         <a-entity
           laser-controls="hand: left"
           raycaster="objects: .clickable"
@@ -253,20 +512,21 @@
         position="0 0 0"
         rotation="0 0 0"
         scale="5 5 5"
-        shadow="cast:true;receive:true"
+        shadow="cast:false;receive:true"
       ></a-gltf-model>
+
       <a-gltf-model
         src="#full floor"
         class="ignoreEntities"
         position="0 0 0"
         rotation="0 0 0"
         scale="5 5 5"
-        shadow="cast:true;receive:true"
+        shadow="cast:false;receive:true"
       ></a-gltf-model>
 
       <a-entity
         id="El-light"
-        light="angle: 80; color: #fff5cc; distance: 20; intensity: 4; penumbra: 0.6; type: spot; castShadow: true; shadowBias: -0.005; shadowMapHeight: 2048; shadowMapWidth: 2048"
+        light="angle: 60; color: #fff5cc; distance: 20; intensity: 4; penumbra: 0.7; type: spot; castShadow: true; shadowBias: -0.002 ; shadowMapHeight: 2048; shadowMapWidth: 2048; shadowCameraNear: 0.5"
         position="-0.80629 3.90425 -13"
         rotation="-90 0 0"
       ></a-entity>
@@ -280,6 +540,7 @@
         go-to="position: -1 0 -14"
         elevator-up
       ></a-gltf-model>
+
       <a-gltf-model
         src="#DOWN"
         class="clickable"
@@ -289,14 +550,16 @@
         go-to="position: -1 -6 -14"
         elevator-down
       ></a-gltf-model>
+
       <a-gltf-model
         id="elevatorFloor"
         src="#floor"
         position="0 0 0"
         rotation="0 0 0"
         scale="5 5 5"
-        shadow="cast:true;receive:true"
+        shadow="cast:false;receive:true"
       ></a-gltf-model>
+
       <a-gltf-model
         id="doors"
         src="#doorModel"
@@ -305,6 +568,7 @@
         scale="5 5 5"
         shadow="cast:true;receive:true"
       ></a-gltf-model>
+
       <a-gltf-model
         src="#el-extra"
         position="0 0 0"
@@ -312,13 +576,16 @@
         scale="5 5 5"
         shadow="cast:true;receive:true"
       ></a-gltf-model>
+
       <a-gltf-model
         src="#room1"
+        id="room1full"
         position="0 0 0"
         rotation="0 0 0"
         scale="5 5 5"
         shadow="cast:true;receive:true"
       ></a-gltf-model>
+
       <a-gltf-model
         src="#intfloor1"
         id="floor1walkable"
@@ -326,7 +593,7 @@
         position="0 0 0"
         rotation="0 0 0"
         scale="5 5 5"
-        shadow="cast:true;receive:true"
+        shadow="cast:false;receive:true"
       ></a-gltf-model>
 
       <a-gltf-model
@@ -337,6 +604,7 @@
         scale="5 5 5"
         shadow="cast:true;receive:true"
       ></a-gltf-model>
+
       <a-gltf-model
         src="#button"
         id="lampbutton"
@@ -350,13 +618,14 @@
 
       <a-entity
         id="lamplight-int"
-        light="angle: 80; color: #ffdf5e; distance: 20; intensity: 4; penumbra: 0.6; type: spot; castShadow: true; shadowBias: -0.005; shadowMapHeight: 2048; shadowMapWidth: 2048"
+        light="angle: 65; color: #ffdf5e; distance: 20; intensity: 4; penumbra: 0.7; type: spot; castShadow: true; shadowBias: -0.002 ; shadowMapHeight: 2048; shadowMapWidth: 2048; shadowCameraNear: 0.2"
         position="-0.56902 1.33095 -5.00121"
         rotation="-90 0 0"
       ></a-entity>
+
       <a-entity
         id="room1-ligt"
-        light="angle: 80; color: #fff5cc; distance: 20; intensity: 2; penumbra: 0.6; type: spot; castShadow: true; shadowBias: -0.005; shadowMapHeight: 2048; shadowMapWidth: 2048"
+        light="angle: 70; color: #fff5cc; distance: 20; intensity: 2; penumbra: 0.7; type: spot; castShadow: true; shadowBias: -0.002 ; shadowMapHeight: 2048; shadowMapWidth: 2048"
         position="-0.10639 3.32433 -7.24211"
         rotation="-90 0 0"
       ></a-entity>
@@ -372,11 +641,11 @@
       ></a-gltf-model>
 
       <a-box
-        id="close-trigger"
+        id="room1-trigger"
         position="-9.19 0 -5.27"
         scale="4 4 4"
         visible="false"
-        door-closer
+        door-closer="doorTarget: #room-door; isAnimatedGlb: false; closeDistance: 5.0"
       ></a-box>
 
       <a-gltf-model
@@ -387,6 +656,7 @@
         scale="5 5 5"
         shadow="cast:true;receive:true"
       ></a-gltf-model>
+
       <a-gltf-model
         src="#intfloor2"
         id="floor2walkable"
@@ -394,13 +664,13 @@
         position="0 0 0"
         rotation="0 0 0"
         scale="5 5 5"
-        shadow="cast:true;receive:true"
+        shadow="cast:false;receive:true"
       ></a-gltf-model>
 
       <a-entity
         id="room2-light"
-        light="angle: 90; color: #fff5cc; distance: 20; intensity: 8; penumbra: 0.22; type: spot; castShadow: true; shadowBias: -0.005; shadowMapHeight: 2048; shadowMapWidth: 2048"
-        position="-10.05662 2.97895 -4.91449"
+        light="angle: 75; color: #fff5cc; decay: 0.4; distance: 25; intensity: 5; penumbra: 0.7; type: spot; castShadow: true; shadowBias: -0.002 ; shadowMapHeight: 2048; shadowMapWidth: 2048"
+        position="-11.46039 3.58366 -4.33518"
         rotation="-90 0 0"
       ></a-entity>
 
@@ -438,12 +708,8 @@
       <a-gltf-model
         src="#clock"
         id="clock-entity"
-        class="clickable"
         scale="5 5 5"
-        shadow=""
-        sound="autoplay: true; loop: true; src: clock alarm.mp3"
-        alarm-clock=""
-        gltf-model="clock.glb"
+        shadow="cast:true;receive:true"
       ></a-gltf-model>
 
       <a-gltf-model
@@ -456,7 +722,254 @@
         shadow="cast:true;receive:true"
       ></a-gltf-model>
 
-      <a-sky color="black"></a-sky>
+      <a-box
+        id="room3-trigger"
+        position="-11.14727 0 5.30278"
+        scale="4 4 4"
+        visible="false"
+        door-closer="doorTarget: #room-door2; isAnimatedGlb: true; closeDistance: 1.8"
+      ></a-box>
+
+      <a-gltf-model
+        src="#intfloor3"
+        id="floor3walkable"
+        class="collision ignoreEntities"
+        position="0 0 0"
+        rotation="0 0 0"
+        scale="5 5 5"
+        shadow="cast:false;receive:true"
+      ></a-gltf-model>
+
+      <a-gltf-model
+        src="#room3"
+        id="room-3"
+        position="0 0 0"
+        rotation="0 0 0"
+        scale="5 5 5"
+        shadow="cast:true;receive:true"
+      ></a-gltf-model>
+
+      <a-gltf-model
+        src="#whiteboard"
+        id="board"
+        position="0 0 0"
+        rotation="0 0 0"
+        scale="5 5 5"
+        shadow="cast:true;receive:true"
+      ></a-gltf-model>
+
+      <a-gltf-model
+        src="#boardimage"
+        id="image"
+        class="clickable"
+        position="0 0 0"
+        rotation="0 0 0"
+        scale="5 5 5"
+        shadow="cast:true;receive:true"
+        board-fade
+      ></a-gltf-model>
+
+      <a-entity
+        id="room3-light"
+        light="angle: 70; color: #fff5cc; decay: 0.5; distance: 40; intensity: 4; penumbra: 0.7; type: spot; castShadow: true; shadowBias: -0.002 ; shadowMapHeight: 2048; shadowMapWidth: 2048"
+        position="-14.22009 3.62267 7.09139"
+        rotation="-90 0 0"
+      ></a-entity>
+
+      <a-entity
+        id="room3-light-2"
+        light="angle: 70; color: #fff5cc; decay: 0.5; distance: 40; intensity: 1; penumbra: 0.7; type: spot; castShadow: true; shadowBias: -0.002 ; shadowMapHeight: 2048; shadowMapWidth: 2048"
+        position="-4.25885 4.20834 6.65741"
+        rotation="-90 0 0"
+      ></a-entity>
+
+      <a-gltf-model
+        src="#door3"
+        id="door3-entity"
+        class="collision"
+        position="0 0 0"
+        rotation="0 0 0"
+        scale="5 5 5"
+        shadow="cast:true;receive:true"
+      ></a-gltf-model>
+
+      <a-box
+        id="room4-trigger"
+        position="-21.11506 0 9.38908"
+        scale="4 4 4"
+        visible="false"
+        door-closer="doorTarget: #door3-entity; isAnimatedGlb: true; closeDistance: 2"
+      ></a-box>
+
+      <a-gltf-model
+        src="#intfloor4"
+        id="floor4walkable"
+        class="collision ignoreEntities"
+        position="0 0 0"
+        rotation="0 0 0"
+        scale="5 5 5"
+        shadow="cast:false;receive:true"
+      ></a-gltf-model>
+
+      <a-gltf-model
+        src="#room4"
+        id="room-4"
+        position="0 0 0"
+        rotation="0 0 0"
+        scale="5 5 5"
+        shadow="cast:true;receive:true"
+      ></a-gltf-model>
+
+      <a-entity
+        id="room4-light-1"
+        light="angle: 75; color: #fff5cc; distance: 25; intensity: 3; penumbra: 0.7; type: spot; castShadow: true; shadowBias: -0.002 ; shadowMapHeight: 2048; shadowMapWidth: 2048"
+        position="-18.09555 4.472 8.79246"
+        rotation="-90 0 0"
+      ></a-entity>
+
+      <a-entity
+        id="room4-light-2"
+        light="angle: 75; color: #fff5cc; distance: 25; intensity: 3; penumbra: 0.7; type: spot; castShadow: true; shadowBias: -0.002 ; shadowMapHeight: 2048; shadowMapWidth: 2048"
+        position="-28.09555 4.472 8.79246"
+        rotation="-90 0 0"
+      ></a-entity>
+
+      <a-gltf-model
+        src="#watercan"
+        id="watercan-click"
+        class="clickable"
+        position="0 0 0"
+        rotation="0 0 0"
+        scale="5 5 5"
+        shadow="cast:true;receive:true"
+      ></a-gltf-model>
+
+      <a-gltf-model
+        src="#smallplant"
+        id="plant-small"
+        class="clickable"
+        position="0 0 0"
+        rotation="0 0 0"
+        scale="5 5 5"
+        shadow="cast:true;receive:true"
+        watering-puzzle
+      ></a-gltf-model>
+
+      <a-gltf-model
+        src="#door4"
+        id="door4-entity"
+        class="collision"
+        position="0 0 0"
+        rotation="0 0 0"
+        scale="5 5 5"
+        shadow="cast:true;receive:true"
+      ></a-gltf-model>
+
+      <a-box
+        id="room5-trigger"
+        class="ignoreEntities"
+        position="-28.5 0 4.5"
+        scale="4 4 4"
+        visible="false"
+        door-closer="doorTarget: #door4-entity; isAnimatedGlb: true; closeDistance: 2"
+      ></a-box>
+
+      <a-gltf-model
+        src="#intfloor5"
+        id="floor5walkable"
+        class="collision ignoreEntities"
+        position="0 0.01 0"
+        rotation="0 0 0"
+        scale="5 5 5"
+        shadow="cast:false;receive:true"
+      ></a-gltf-model>
+
+      <a-gltf-model
+        src="#room5"
+        id="room-5"
+        position="0 0 0"
+        rotation="0 0 0"
+        scale="5 5 5"
+        shadow="cast:true;receive:true"
+      ></a-gltf-model>
+
+      <a-entity
+        id="room5-light"
+        light="angle: 75; color: #fff5cc; distance: 25; intensity: 3; penumbra: 0.7; type: spot; castShadow: true; shadowBias: -0.002; shadowMapHeight: 2048; shadowMapWidth: 2048"
+        position="-23.49634 4.472 15.09501"
+        rotation="-90 0 0"
+      ></a-entity>
+
+      <a-gltf-model
+        src="#candle1"
+        id="candle-off-entity"
+        class="clickable"
+        position="0 0 0"
+        rotation="0 0 0"
+        scale="5 5 5"
+        shadow="cast:true;receive:true"
+        candle-puzzle
+      ></a-gltf-model>
+
+      <a-gltf-model
+        src="#candle2"
+        id="candle-lit-entity"
+        position="0 0 0"
+        rotation="0 0 0"
+        scale="5 5 5"
+        visible="false"
+        shadow="cast:true"
+      ></a-gltf-model>
+
+      <a-gltf-model
+        src="#matches"
+        id="matches-entity"
+        class="clickable"
+        position="0 0 0"
+        rotation="0 0 0"
+        scale="5 5 5"
+        shadow="cast:true"
+      ></a-gltf-model>
+
+      <a-gltf-model
+        src="#door5"
+        id="door5-entity"
+        class="collision"
+        position="0 0 0"
+        rotation="0 0 0"
+        scale="5 5 5"
+        shadow="cast:true;receive:true"
+      ></a-gltf-model>
+
+      <a-box
+        id="room6-trigger"
+        class="ignoreEntities"
+        position="-23.59308 0 11.793"
+        scale="4 4 4"
+        visible="false"
+        door-closer="doorTarget: #door5-entity; isAnimatedGlb: true; closeDistance: 2"
+      ></a-box>
+
+      <a-gltf-model
+        src="#intfloor6"
+        id="floor6walkable"
+        class="collision ignoreEntities"
+        position="0 0 0"
+        rotation="0 0 0"
+        scale="5 5 5"
+        shadow="cast:false;receive:true"
+      ></a-gltf-model>
+
+      <a-box
+        id="game-finish-line"
+        class="ignoreEntities"
+        position="2.21691 0 14.815"
+        scale="5 4 3.54"
+        visible="false"
+        end-game-trigger=""
+      ></a-box>
+
+      <a-sky id="gameSky" color="black"></a-sky>
     </a-scene>
   </body>
 </html>
