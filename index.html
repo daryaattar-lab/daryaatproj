@@ -29,6 +29,25 @@
         });
       }
 
+      // New component to trigger negative ambient tracks when clicking the floor
+      AFRAME.registerComponent("room-entry-sound", {
+        schema: {
+          targetTrack: { type: "string" },
+        },
+        init: function () {
+          this.el.addEventListener("click", () => {
+            if (!this.activated) {
+              console.log(
+                "Stepped into new room, playing: " + this.data.targetTrack,
+              );
+              transitionAmbientSound(this.data.targetTrack);
+              this.activated = true;
+              this.el.classList.remove("clickable");
+            }
+          });
+        },
+      });
+
       AFRAME.registerComponent("elevator-up", {
         init: function () {
           this.el.addEventListener("click", () => {
@@ -168,17 +187,6 @@
                 "property: rotation; to: 0 0 0; dur: 1500; easing: easeInOutQuad",
               );
               console.log("Player entered Room. Door rotated shut!");
-            }
-
-            // --- AUDIO TRIGGER: As a door locks behind you, start the next room's creepy theme ---
-            if (targetDoor.id === "room-door") {
-              transitionAmbientSound("#negativeSoundRoom2");
-            } else if (targetDoor.id === "room-door2") {
-              transitionAmbientSound("#negativeSoundRoom3");
-            } else if (targetDoor.id === "door3-entity") {
-              transitionAmbientSound("#negativeSoundRoom4");
-            } else if (targetDoor.id === "door4-entity") {
-              transitionAmbientSound("#negativeSoundRoom5");
             }
 
             this.el.removeAttribute("door-closer");
@@ -419,7 +427,7 @@
                 );
               }
               const triggerZone6 = document.querySelector("#room6-trigger");
-              if (triggerZone6) {
+              if (triggerZone6?.components["door-closer"]?.hasClosed) {
                 triggerZone6.components["door-closer"].hasClosed = false;
               }
               this.el.classList.remove("clickable");
@@ -445,7 +453,10 @@
         tick: function () {
           if (this.hasFinished || !this.playerHead) return;
           const triggerZone6 = document.querySelector("#room6-trigger");
-          if (triggerZone6 && triggerZone6.components["door-closer"].hasClosed)
+          if (
+            triggerZone6 &&
+            triggerZone6?.components["door-closer"]?.hasClosed
+          )
             return;
 
           this.playerHead.object3D.getWorldPosition(this.playerWorldPos);
@@ -746,13 +757,7 @@
           scale="5 5 5"
           shadow="cast:true;receive:true"
           lamp-switch
-        >
-          <a-entity
-            position="-0.09 0.126 -1.6"
-            id="lamp-sound"
-            sound="src: #clockSound; loop: false; autoplay: false; volume: 0.6; positional: true"
-          ></a-entity>
-        </a-gltf-model>
+        ></a-gltf-model>
 
         <a-entity
           id="lamplight-int"
@@ -796,7 +801,8 @@
         <a-gltf-model
           src="#intfloor2"
           id="floor2walkable"
-          class="collision ignoreEntities"
+          class="collision ignoreEntities clickable"
+          room-entry-sound="targetTrack: #negativeSoundRoom2"
           position="0 0 0"
           rotation="0 0 0"
           scale="5 5 5"
@@ -867,7 +873,8 @@
         <a-gltf-model
           src="#intfloor3"
           id="floor3walkable"
-          class="collision ignoreEntities"
+          class="collision ignoreEntities clickable"
+          room-entry-sound="targetTrack: #negativeSoundRoom3"
           position="0 0 0"
           rotation="0 0 0"
           scale="5 5 5"
@@ -896,7 +903,7 @@
           src="#boardimage"
           id="image"
           class="clickable"
-          position="0 0 0"
+          position="0.010 0 0"
           rotation="0 0 0"
           scale="5 5 5"
           shadow="cast:true;receive:true"
@@ -936,7 +943,8 @@
         <a-gltf-model
           src="#intfloor4"
           id="floor4walkable"
-          class="collision ignoreEntities"
+          class="collision ignoreEntities clickable"
+          room-entry-sound="targetTrack: #negativeSoundRoom4"
           position="0 0 0"
           rotation="0 0 0"
           scale="5 5 5"
@@ -1006,7 +1014,8 @@
         <a-gltf-model
           src="#intfloor5"
           id="floor5walkable"
-          class="collision ignoreEntities"
+          class="collision ignoreEntities clickable"
+          room-entry-sound="targetTrack: #negativeSoundRoom5"
           position="0 0.01 0"
           rotation="0 0 0"
           scale="5 5 5"
